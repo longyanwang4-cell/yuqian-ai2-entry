@@ -7,6 +7,19 @@
 > 本仓库**只有静态入口页**：不含后端源码、数据库、密钥、邀请码、Cookie 或任何用户数据。
 > 真正的 OCR 识别、对话与预约提醒服务运行在演示电脑上，通过 HTTPS 隧道对外提供。
 
+## 当前状态（2026-10-22 03:45 实测）
+
+| 项目 | 状态 |
+|---|---|
+| GitHub Pages | 已启用，Source = `Deploy from a branch` / `main` / `/ (root)` |
+| 站点地址 | https://longyanwang4-cell.github.io/yuqian-ai2-entry/ （HTTP 301 → HTTPS，证书 `*.github.io`） |
+| `index.html` | 200，根路径与 `/index.html` 均可访问 |
+| `experienceUrl` | **空** —— 尚未有经公网验证的后端 HTTPS 地址，入口按钮置灰显示「体验服务暂不可用」 |
+
+> 说明：`wly-legion.tailfde657.ts.net` 属于 Tailscale 组网域名，仅 tailnet 内的设备可达，
+> 不能作为对外体验地址，因此未写入 `experienceUrl`。
+
+
 ## 页面结构
 
 | 区块 | 说明 |
@@ -37,8 +50,8 @@
 ## 安全边界
 
 - 页面无 Cookie、无用户数据、不引用第三方脚本或统计代码。
-- `experienceUrl` 强制 `https://`，并拒绝 `localhost`、`127.0.0.1`、`::1`、`10.`、`192.168.`、`172.16-31.`、`169.254.`、`.local`、`.internal`、`.lan` 等本机与私有网段地址。
-- 后端地址未配置或不合法时，按钮保持禁用状态，不跳转。
+- `experienceUrl` 强制 `https://`，并拒绝 `localhost`、`127.0.0.1`、`::1`、`10.`、`192.168.`、`172.16-31.`、`169.254.`、`.local`、`.internal`、`.lan`、`.ts.net`、`.tailscale.net`、`.ngrok-free.app` 等本机、私有网段与组网/内网穿透域名。
+- 后端地址未配置或不合法时，按钮保持禁用状态，不跳转；连通性预检超时同样按不可用处理。
 - 连通性预检使用 `mode: "no-cors"` + `credentials: "omit"`，只判断请求是否可达，不读取任何响应内容。
 - 页面不伪造 OCR、聊天、预约创建或提醒结果；所有结果均来自真实后端。
 

@@ -309,9 +309,11 @@
       }
 
       var base = v.url.origin + v.url.pathname;
+      // 保留查询参数（例如 ?demo=1 用于一键进入体验会话的六页 H5），探测仍走干净路径
+      var launch = base + (v.url.search || "");
       // 地址合法即可进入：跨域探测会受 CORS / 私有网络访问(PNA) 策略影响产生误判，
       // 因此只把探测结果当作提示，不作为放行门槛，也绝不据此宣称“服务已就绪”。
-      enable(base, "入口已配置，点击上方按钮开始体验；实际可用性以打开后的页面为准。");
+      enable(launch, "入口已配置，点击上方按钮开始体验；实际可用性以打开后的页面为准。");
       probe(base).then(function (result) {
         if (result === "reachable") {
           setStatus("ok", "服务连通性预检通过，点击上方按钮开始体验。");

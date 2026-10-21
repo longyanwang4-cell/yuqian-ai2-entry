@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2f6f4f">
+<meta name="description" content="羽签 AI 2.0 —— 校园运动预约 · 智能提醒助手。上传预约截图或说一句话，自动识别场馆时段并生成提醒。">
+<title>羽签 AI 2.0 · 校园运动预约 · 智能提醒助手</title>
+<style>
+  :root{
+    --brand:#2f6f4f;--brand-2:#3f8f66;--brand-soft:#eef7f1;
+    --ink:#16221c;--muted:#5c6b63;--bg:#f4f7f4;--card:#ffffff;--line:#e2ebe5;
+    --warn:#8a5a00;--warn-bg:#fdf3e6;--danger:#a12b26;--danger-bg:#fdecea;
+    --ok:#2f6f4f;--ok-bg:#eef7f1;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:linear-gradient(180deg,#eaf3ec 0%,#f6faf7 44%,#fbfdfb 100%);
+    color:var(--ink);min-height:100vh;line-height:1.6;
+    padding:22px 16px 40px;display:flex;justify-content:center;
+  }
+  .wrap{width:100%;max-width:460px}
+
+  /* ---------- 品牌头 ---------- */
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .logo{
+    width:54px;height:54px;border-radius:17px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:flex;align-items:center;justify-content:center;font-size:27px;
+    box-shadow:0 10px 22px rgba(47,111,79,.26);
+  }
+  h1{font-size:1.34rem;margin:0;letter-spacing:.4px;font-weight:700}
+  .sub{font-size:.79rem;color:var(--muted);margin-top:3px;letter-spacing:.2px}
+
+  /* ---------- 卡片 ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:20px;box-shadow:0 10px 30px rgba(22,34,28,.06);margin-bottom:14px;
+  }
+  .card h2{
+    font-size:.86rem;margin:0 0 10px;color:var(--brand);font-weight:700;
+    display:flex;align-items:center;gap:7px;letter-spacing:.3px;
+  }
+  .card h2::before{
+    content:"";width:4px;height:14px;border-radius:2px;
+    background:linear-gradient(180deg,var(--brand),var(--brand-2));display:block;
+  }
+  .lead{font-size:.92rem;line-height:1.72;margin:0}
+  .lead b{color:var(--brand)}
+
+  /* ---------- 主按钮 ---------- */
+  .cta{
+    display:block;width:100%;margin-top:16px;padding:15px 12px;border:0;border-radius:14px;
+    cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff;font-size:1rem;font-weight:600;text-decoration:none;text-align:center;
+    box-shadow:0 10px 24px rgba(47,111,79,.26);
+    transition:transform .12s ease,opacity .12s ease;
+    font-family:inherit;
+  }
+  .cta:active{transform:scale(.985)}
+  .cta[aria-disabled="true"]{
+    background:#c7d3cc;box-shadow:none;cursor:not-allowed;color:#6b7a72;
+  }
+  .sub-actions{display:flex;gap:10px;margin-top:10px}
+  .ghost{
+    flex:1;display:block;padding:11px 8px;border-radius:12px;text-align:center;
+    border:1px solid var(--line);background:#fbfdfb;color:var(--brand);
+    font-size:.83rem;font-weight:600;text-decoration:none;cursor:pointer;font-family:inherit;
+  }
+  .ghost:active{background:var(--brand-soft)}
+
+  /* ---------- 状态 ---------- */
+  .status{
+    display:flex;align-items:flex-start;gap:9px;font-size:.79rem;line-height:1.6;
+    border-radius:12px;padding:11px 12px;background:#f7faf8;color:var(--muted);
+    border:1px solid var(--line);margin-top:14px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:#b6c3bb;flex:0 0 auto;margin-top:6px}
+  .status.is-ok{background:var(--ok-bg);color:var(--ok);border-color:#cfe6d9}
+  .status.is-ok .dot{background:var(--ok);box-shadow:0 0 0 3px rgba(47,111,79,.16)}
+  .status.is-off{background:var(--warn-bg);color:var(--warn);border-color:#f0dcbb}
+  .status.is-off .dot{background:#c98a1e;box-shadow:0 0 0 3px rgba(201,138,30,.16)}
+  .status.is-err{background:var(--danger-bg);color:var(--danger);border-color:#f3cdc9}
+  .status.is-err .dot{background:var(--danger);box-shadow:0 0 0 3px rgba(161,43,38,.14)}
+  .status b{font-weight:700}
+  .status code{
+    font-size:.72rem;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;
+  }
+
+  /* ---------- 列表 ---------- */
+  ul.feature{margin:0;padding:0;list-style:none}
+  ul.feature li{
+    position:relative;padding-left:22px;font-size:.83rem;line-height:1.75;color:var(--muted);
+    margin-bottom:7px;
+  }
+  ul.feature li:last-child{margin-bottom:0}
+  ul.feature li::before{
+    content:"";position:absolute;left:6px;top:.62em;width:6px;height:6px;border-radius:50%;
+    background:var(--brand-2);opacity:.55;
+  }
+  ul.feature li b{color:var(--ink);font-weight:600}
+
+  ol.steps{margin:0;padding:0;list-style:none;counter-reset:step}
+  ol.steps li{
+    counter-increment:step;position:relative;padding-left:30px;
+    font-size:.83rem;line-height:1.7;color:var(--muted);margin-bottom:11px;
+  }
+  ol.steps li:last-child{margin-bottom:0}
+  ol.steps li::before{
+    content:counter(step);position:absolute;left:0;top:1px;
+    width:21px;height:21px;border-radius:50%;background:var(--brand-soft);color:var(--brand);
+    font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+    border:1px solid #cfe6d9;
+  }
+  ol.steps li b{color:var(--ink);font-weight:600}
+
+  .note{
+    font-size:.75rem;line-height:1.7;color:var(--muted);background:#f9fbf9;
+    border-left:3px solid var(--line);border-radius:0 8px 8px 0;padding:9px 12px;margin-top:12px;
+  }
+  .note b{color:var(--warn);font-weight:600}
+
+  /* ---------- 页脚 ---------- */
+  .foot{
+    margin-top:18px;font-size:.71rem;color:#8b9a92;line-height:1.75;text-align:center;
+  }
+  .foot .meta{margin-top:8px;color:#a3b0a9;font-size:.68rem}
+  .foot a{color:var(--brand);text-decoration:none}
+
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 品牌 -->
+  <header class="brand">
+    <div class="logo" aria-hidden="true">🏸</div>
+    <div>
+      <h1>羽签 AI 2.0</h1>
+      <div class="sub">校园运动预约 · 智能提醒助手</div>
+    </div>
+  </header>
+
+  <!-- 立即体验 -->
+  <section class="card" id="start">
+    <h2>立即体验羽签</h2>
+    <p class="lead">第一次配置，以后通过<b>截图</b>或<b>一句话</b>管理预约提醒。</p>
+
+    <a class="cta" id="cta" href="#" aria-disabled="true" role="button">正在检查体验服务…</a>
+
+    <div class="sub-actions">
+      <a class="ghost" href="#about">了解羽签</a>
+      <a class="ghost" href="#howto">使用说明</a>
+    </div>
+
+    <div class="status" id="status" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="statusText">正在检查当前服务状态…</span>
+    </div>
+  </section>
+
+  <!-- 了解羽签 -->
+  <section class="card" id="about">
+    <h2>了解羽签</h2>
+    <ul class="feature">
+      <li><b>真实 OCR 识别</b>：上传预约截图，识别场馆、日期与时段，不使用预置演示数据。</li>
+      <li><b>按学校规则校验</b>：依据本校签到规则计算提醒时间，冲突或信息缺失会主动追问。</li>
+      <li><b>一句话建预约</b>：说「周六晚上 8 点到 10 点有球，提醒我签到」，自动解析并确认。</li>
+      <li><b>长期记忆</b>：首次配置一次学校与场馆，之后同一账号长期复用，不用重复填写。</li>
+      <li><b>多用户隔离</b>：正式用户与临时体验者的数据互相不可见。</li>
+    </ul>
+  </section>
+
+  <!-- 使用说明 -->
+  <section class="card" id="howto">
+    <h2>使用说明</h2>
+    <ol class="steps">
+      <li><b>打开体验</b>：点击上方「立即体验羽签」，或扫描现场二维码进入。</li>
+      <li><b>首次配置</b>：上传一张预约截图与签到二维码，完成学校、场馆与提醒规则设置（约 1 分钟）。</li>
+      <li><b>日常使用</b>：之后只要上传新的预约截图，或直接说一句话即可创建预约。</li>
+      <li><b>确认与提醒</b>：确认预约后写入数据库，提醒任务自动创建并按规则触发。</li>
+    </ol>
+    <div class="note">
+      <b>请注意</b>：无需注册也可体验（独立临时会话，约 30 分钟自动失效，访问者之间数据隔离）。
+      提醒目前记录在本地调度日志中，<b>尚未接入手机推送</b>，现场不会真的收到微信通知。
+      文字登记的预约未经学校系统核实，仅作为「用户自行登记」处理。
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>本页仅作静态介绍与统一入口，识别、对话与提醒均由真实后端服务完成。</div>
+    <div class="meta" id="meta"></div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CTA = document.getElementById("cta");
+  var STATUS = document.getElementById("status");
+  var STATUS_TEXT = document.getElementById("statusText");
+  var META = document.getElementById("meta");
+
+  var PROBE_TIMEOUT_MS = 6000;
+
+  function setStatus(kind, html) {
+    STATUS.className = "status " + (kind ? "is-" + kind : "");
+    STATUS_TEXT.innerHTML = html;
+  }
+
+  function disable(msg) {
+    CTA.setAttribute("aria-disabled", "true");
+    CTA.removeAttribute("href");
+    CTA.textContent = "体验服务暂不可用";
+    setStatus("off", msg);
+  }
+
+  function enable(url, note) {
+    CTA.setAttribute("aria-disabled", "false");
+    CTA.setAttribute("href", url);
+    CTA.textContent = "立即体验羽签 →";
+    setStatus("ok", note);
+  }
+
+  // 只接受已通过验证的公网 HTTPS 地址
+  var PRIVATE_HOST = [
+    /^localhost$/i, /^127\./, /^0\.0\.0\.0$/, /^\[?::1\]?$/,
+    /^10\./, /^192\.168\./, /^169\.254\./,
+    /^172\.(1[6-9]|2\d|3[01])\./,
+    /\.local$/i, /\.internal$/i, /\.lan$/i, /^\[?f[cd]/i
+  ];
+
+  function validate(raw) {
+    var url;
+    try { url = new URL(raw); } catch (e) { return { ok: false, why: "地址格式不合法" }; }
+    if (url.protocol !== "https:") { return { ok: false, why: "必须使用 https://" }; }
+    var host = url.hostname;
+    for (var i = 0; i < PRIVATE_HOST.length; i++) {
+      if (PRIVATE_HOST[i].test(host)) {
+        return { ok: false, why: "禁止跳转到本机或局域网地址" };
+      }
+    }
+    if (!host || host.indexOf(".") === -1) { return { ok: false, why: "不是公网域名" }; }
+    return { ok: true, url: url };
+  }
+
+  function probe(base) {
+    var target = base.replace(/\/+$/, "") + "/api/health";
+    return new Promise(function (resolve) {
+      var done = false;
+      var timer = setTimeout(function () {
+        if (!done) { done = true; resolve("timeout"); }
+      }, PROBE_TIMEOUT_MS);
+
+      // no-cors：不读取任何响应内容，仅判断请求能否到达（连接被拒绝/DNS 失败会 reject）
+      fetch(target, { mode: "no-cors", cache: "no-store", credentials: "omit" })
+        .then(function () {
+          if (!done) { done = true; clearTimeout(timer); resolve("reachable"); }
+        })
+        .catch(function () {
+          if (!done) { done = true; clearTimeout(timer); resolve("unreachable"); }
+        });
+    });
+  }
+
+  fetch("config.json?t=" + Date.now(), { cache: "no-store" })
+    .then(function (r) {
+      if (!r.ok) { throw new Error("HTTP " + r.status); }
+      return r.json();
+    })
+    .then(function (cfg) {
+      META.textContent = "入口版本 " + (cfg.version || "-") + " · 更新于 " + (cfg.updatedAt || "-");
+      var raw = (cfg.experienceUrl || "").trim();
+
+      if (!raw) {
+        disable("羽签体验服务暂时不可用，请稍后再试。");
+        return;
+      }
+
+      var v = validate(raw);
+      if (!v.ok) {
+        disable("体验地址未通过安全校验（" + v.why + "），已阻止跳转。请联系现场工作人员。");
+        return;
+      }
+
+      var base = v.url.origin + v.url.pathname;
+      probe(base).then(function (result) {
+        if (result === "reachable") {
+          enable(base, "服务已就绪，点击上方按钮开始体验。");
+        } else if (result === "timeout") {
+          // 不假装成功：仍给出入口，但明确告知未完成预检
+          enable(base, "连通性预检超时，服务可能较慢或暂不可用；如打不开请稍后再试。");
+        } else {
+          disable("羽签体验服务暂时不可用，请稍后再试。");
+        }
+      });
+    })
+    .catch(function () {
+      disable("羽签体验服务暂时不可用，请稍后再试。");
+    });
+})();
+</script>
+</body>
+</html>

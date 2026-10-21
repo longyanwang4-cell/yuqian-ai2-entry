@@ -85,10 +85,11 @@
   .status.is-err{background:var(--danger-bg);color:var(--danger);border-color:#f3cdc9}
   .status.is-err .dot{background:var(--danger);box-shadow:0 0 0 3px rgba(161,43,38,.14)}
   .status b{font-weight:700}
-  .status code{
-    font-size:.72rem;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px;
-    font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;
+  .retry{
+    display:block;margin-top:9px;text-align:center;font-size:.76rem;
+    color:var(--muted);text-decoration:underline;text-underline-offset:2px;
   }
+  .retry[hidden]{display:none}
 
   /* ---------- 列表 ---------- */
   ul.feature{margin:0;padding:0;list-style:none}
@@ -210,6 +211,7 @@
   var STATUS = document.getElementById("status");
   var STATUS_TEXT = document.getElementById("statusText");
   var META = document.getElementById("meta");
+  var RETRY = document.getElementById("retry");
 
   var PROBE_TIMEOUT_MS = 6000;
 
@@ -218,14 +220,24 @@
     STATUS_TEXT.innerHTML = html;
   }
 
-  function disable(msg) {
+  function disable(msg, retryUrl) {
     CTA.setAttribute("aria-disabled", "true");
     CTA.removeAttribute("href");
     CTA.textContent = "体验服务暂不可用";
     setStatus("off", msg);
+    // 预检失败时给出明确标注的手动入口，绝不伪装成“已就绪”
+    if (retryUrl) {
+      RETRY.hidden = false;
+      RETRY.setAttribute("href", retryUrl);
+    } else {
+      RETRY.hidden = true;
+      RETRY.removeAttribute("href");
+    }
   }
 
   function enable(url, note) {
+    RETRY.hidden = true;
+    RETRY.removeAttribute("href");
     CTA.setAttribute("aria-disabled", "false");
     CTA.setAttribute("href", url);
     CTA.textContent = "立即体验羽签 →";
@@ -300,10 +312,10 @@
         if (result === "reachable") {
           enable(base, "服务已就绪，点击上方按钮开始体验。");
         } else if (result === "timeout") {
-          // 未完成连通性验证，一律按不可用处理，不给出可能失效的入口
-          disable("连通性预检超时，暂时无法确认服务可用，请稍后再试。");
+          // 未完成连通性验证：不给出“已就绪”结论，只保留明确标注的手动入口
+          disable("未能在限定时间内确认服务可用，请稍后再试。", base);
         } else {
-          disable("羽签体验服务暂时不可用，请稍后再试。");
+          disable("羽签体验服务暂时不可用，请稍后再试。", base);
         }
       });
     })

@@ -245,13 +245,14 @@
   }
 
   // 只接受已通过验证的公网 HTTPS 地址
+  // 说明：*.ts.net 走 Tailscale Funnel 时已由公共 DNS 解析到 Funnel 公网入口 IP，
+  // 因此不在此拦截；仅当它走普通 Serve（非 Funnel）时才对公网不可达，
+  // 这种情况由下方的连通性预检兜底，不会给出“已就绪”的错误结论。
   var PRIVATE_HOST = [
     /^localhost$/i, /^127\./, /^0\.0\.0\.0$/, /^\[?::1\]?$/,
     /^10\./, /^192\.168\./, /^169\.254\./,
     /^172\.(1[6-9]|2\d|3[01])\./,
-    /\.local$/i, /\.internal$/i, /\.lan$/i, /^\[?f[cd]/i,
-    // 内网穿透 / 虚拟组网域名：仅特定设备可达，不能作为对外体验地址
-    /\.ts\.net$/i, /\.tailscale\.net$/i, /\.ngrok-free\.app$/i
+    /\.local$/i, /\.internal$/i, /\.lan$/i, /^\[?f[cd]/i
   ];
 
   function validate(raw) {
